@@ -1,0 +1,10 @@
+#stage {
+    width: 1710px;
+    height: 1299px;
+    position: relative;
+    border: 2px solid black;
+}
+
+canvas { position: absolute; }
+#entityCanvas { z-index: 2; }
+#bgCanvas { z-index: 1; }
