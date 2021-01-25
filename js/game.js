@@ -71,15 +71,12 @@ function create ()
     platforms.create(750, 220, 'ground');
     platforms.toggleVisible();
     
-    player = this.physics.add.sprite(100,440,'player_idle');
-    player.setBounce(0);
-    player.setCollideWorldBounds(true);
-    player.setZ(5);
 
     mob = this.physics.add.sprite(200,440,'mob');
     mob.setBounce(0);
     mob.setCollideWorldBounds(true);
 
+    // skills =this.physics.add.group();
 
     skill = this.physics.add.sprite(0,0,'skill_roar');
     skill.visible = false;
@@ -90,6 +87,11 @@ function create ()
         skill.body.enable = false;
         isUsingSkill = false;
     });
+    // skills.add(skill);
+
+    player = this.physics.add.sprite(100,440,'player_idle');
+    player.setBounce(0);
+    player.setCollideWorldBounds(true);
 
     this.anims.create({
         key: 'left',
