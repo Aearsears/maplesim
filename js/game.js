@@ -1,3 +1,4 @@
+//TODO: get collision points
 var config = {
     type: Phaser.AUTO,
     width: 800,
@@ -27,6 +28,26 @@ var keyObj;  // Get key object
 var aIsDown ;
 var aIsUp ;
 var isUsingSkill = false;
+var actual_JSON;
+function loadJSON(callback) {   
+    var xobj = new XMLHttpRequest();
+    xobj.overrideMimeType("application/json");
+    xobj.open('GET', 'map_json/100000203.json', true);
+    xobj.onreadystatechange = function () {
+      if (xobj.readyState == 4 && xobj.status == "200") {
+        callback(JSON.parse(xobj.responseText));
+      }
+    };
+    xobj.send(null);  
+  }
+
+function init() {
+    loadJSON(function(response) {
+     // Parse JSON string into object
+       actual_JSON = response;
+    });
+   }
+init();
 
 function preload ()
 {
@@ -152,6 +173,7 @@ function create ()
 }
 
 function update(){
+    mob.anims.play('mob_idle',true);
     if (cursors.left.isDown)
     {
         player.setVelocityX(-160);
@@ -172,7 +194,7 @@ function update(){
     }
     else
     {   
-        mob.anims.play('mob_idle',true);
+        
 
 
         if(player.body.onFloor()){
