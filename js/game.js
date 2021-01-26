@@ -1,4 +1,5 @@
 //TODO: get collision points
+
 var config = {
     type: Phaser.AUTO,
     width: 800,
@@ -18,8 +19,22 @@ var config = {
     }
 };
 
+class Character extends Phaser.Physics.Arcade.Sprite{
+    constructor(scene,x,y){
+        super(scene,x,y,'player_idle');
+        scene.add.existing(this);
+        scene.physics.add.existing(this);
+        this.setBounce(0);
+        // this.setCollideWorldBounds(true);
+
+    }
+
+}
+
+
 var game = new Phaser.Game(config);
-var player;
+var character;
+var character2;
 var skill;
 var stars;
 var platforms;
@@ -50,7 +65,7 @@ function init() {
 init();
 
 function preload ()
-{
+{   //this is game
     this.load.image('bg', 'data/bg/henesysground.png');
     this.load.image('ground', 'assets/platform.png');
     this.load.image('star', 'assets/star.png');
@@ -110,9 +125,11 @@ function create ()
     });
     // skills.add(skill);
 
-    player = this.physics.add.sprite(100,440,'player_idle');
-    player.setBounce(0);
-    player.setCollideWorldBounds(true);
+    character = this.physics.add.sprite(100,440,'player_idle');
+    character.setBounce(0);
+    character.setCollideWorldBounds(true);
+    character2 = new Character(this,100,240);   
+
 
     this.anims.create({
         key: 'left',
@@ -145,9 +162,9 @@ function create ()
         frameRate: 10,
     });
     
-    this.physics.add.collider(player,platforms);
+    this.physics.add.collider(character,platforms);
     this.physics.add.collider(mob,platforms);
-    this.physics.add.overlap(player,mob,takeDmg,null,this);
+    this.physics.add.overlap(character,mob,takeDmg,null,this);
     this.physics.add.overlap(skill,mob,takeDmg,null,this);
     // this.physics.add.overlap(skill,player,takeDmg,null,this);
     
@@ -168,7 +185,7 @@ function create ()
 
     });
     this.physics.add.collider(stars,platforms);
-    this.physics.add.overlap(player,stars,collectStar,null,this);
+    this.physics.add.overlap(character,stars,collectStar,null,this);
 
 }
 
@@ -176,20 +193,20 @@ function update(){
     mob.anims.play('mob_idle',true);
     if (cursors.left.isDown)
     {
-        player.setVelocityX(-160);
-        player.flipX=true;
-        if(player.body.onFloor()){
+        character.setVelocityX(-160);
+        character.flipX=true;
+        if(character.body.onFloor()){
             
-            player.anims.play('left', true);
+            character.anims.play('left', true);
         }
     }
     else if (cursors.right.isDown)
     {
-        player.setVelocityX(160);
-        player.flipX=false;
-        if(player.body.onFloor()){
+        character.setVelocityX(160);
+        character.flipX=false;
+        if(character.body.onFloor()){
             
-            player.anims.play('left', true);
+            character.anims.play('left', true);
         }
     }
     else
@@ -197,27 +214,27 @@ function update(){
         
 
 
-        if(player.body.onFloor()){
-            player.anims.play('idle',true);
+        if(character.body.onFloor()){
+            character.anims.play('idle',true);
         }else {
-            player.anims.play('jump',true);
+            character.anims.play('jump',true);
         }
-        player.setVelocityX(0);
+        character.setVelocityX(0);
         
         
     }
     //jump
-    if (cursors.up.isDown && player.body.onFloor())
+    if (cursors.up.isDown && character.body.onFloor())
     {
-        player.setVelocityY(-300);
-        player.anims.play('jump',true);
+        character.setVelocityY(-300);
+        character.anims.play('jump',true);
         
     }
     if(keyObj.isDown && !isUsingSkill){
         isUsingSkill = true;
         skill.visible = true;
         skill.body.enable = true;
-        skill.setPosition(player.x,player.y,0);
+        skill.setPosition(character.x,character.y,0);
         skill.anims.play('roar',true);
 
         
@@ -229,17 +246,13 @@ function update(){
 
 function render() {
 
-    // Sprite debug info
-    this.game.debug.spriteInfo(player, 32, 32);
-    this.game.debug.body(player);
-    console.log("helloworld");
 
 }
 
-function collectStar(player,star){
+function collectStar(p1,star){
     star.disableBody(true,true);
 }
 
-function takeDmg(player,mob){
+function takeDmg(p1,mob){
     console.log("dmgtaken!");
 }
