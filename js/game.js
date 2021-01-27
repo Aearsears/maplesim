@@ -1,5 +1,7 @@
 //TODO: get collision points
 
+const GRAVITY =300;
+
 var config = {
     type: Phaser.AUTO,
     width: 800,
@@ -7,7 +9,7 @@ var config = {
     physics: {
         default: 'arcade',
         arcade: {
-            gravity: { y: 300 },
+            gravity: { y: GRAVITY },
             debug:true
         }
     },
@@ -20,15 +22,110 @@ var config = {
 };
 
 class Character extends Phaser.Physics.Arcade.Sprite{
-    constructor(scene,x,y){
-        super(scene,x,y,'player_idle');
+    constructor(scene,x,y,sprite){
+        super(scene,x,y,sprite);
         scene.add.existing(this);
         scene.physics.add.existing(this);
         this.setBounce(0);
-        // this.setCollideWorldBounds(true);
+        this.setCollideWorldBounds(true);
+        scene.physics.add.collider(this,platforms);
 
+        this.str = 4;
+        this.dex = 4;
+        this.int = 4;
+        this.luk = 4;
+        this.hp = 100;
+        this.mp = 100;
+
+        //each character also has an arsenal of skills
+        this.skills =[];
+    }
+    gethp(){
+        return this.hp;
+    }
+    sethp(hp){
+        this.hp = this.hp-hp;
+    }
+    getmp(){
+        return this.mp;
+    }
+    setmp(mp){
+        this.mp = this.mp-mp;
+    }
+    //adds a Skill object into array
+    addSkill(skill){
+        skill.setCharacter(this);
+        this.skills.push(skill);
+    }
+    getSkill(){
+        return this.skills[0];
+    }
+    getAllSkills(){
+        return this.skills;
+    }
+}
+
+class Mob extends Phaser.Physics.Arcade.Sprite{
+    constructor(scene,x,y,sprite){
+        super(scene,x,y,sprite);
+        scene.add.existing(this);
+        scene.physics.add.existing(this);
+        this.setBounce(0);
+        this.setCollideWorldBounds(true);
+        scene.physics.add.collider(this,platforms);
+        this.hp = 100;
+        this.mp = 100;
+    }
+    gethp(){
+        return this.hp;
+    }
+    //technically should be minus hp
+    sethp(hp){
+        this.hp = this.hp-hp;
+    }
+    getmp(){
+        return this.mp;
+    }
+    setmp(mp){
+        this.mp = this.mp-mp;
     }
 
+}
+
+class Skill extends Phaser.Physics.Arcade.Sprite{
+    constructor(scene,x,y,sprite){
+        super(scene,x,y,sprite);
+        //need these two statements to add sprite scene and enable physics
+        scene.add.existing(this);
+        scene.physics.add.existing(this);
+
+        this.visible = false;
+        this.body.enable = false;
+        this.body.setGravity(0,GRAVITY*(-1));
+        this.name='roar';
+
+        this.on('animationcomplete', function (animation,frame) {
+            this.visible = false;
+            // this.body.enable = false;
+            isUsingSkill = false;
+        });
+
+        //at half way of the frame completion, display the damage number
+        
+
+        scene.physics.add.overlap(this,mob);
+        //what matters is the base dmg of the skill that hit
+        this.baseDmg =50;
+        //this is to find the character this skill belongs to
+        this.character;
+    }
+    setCharacter(c){
+        this.character =c;
+    }
+    getCharacter(){
+        return character;
+    }
+    
 }
 
 
@@ -108,28 +205,18 @@ function create ()
     platforms.toggleVisible();
     
 
-    mob = this.physics.add.sprite(200,440,'mob');
-    mob.setBounce(0);
-    mob.setCollideWorldBounds(true);
+    mob = new Mob(this,200,440,'mob');
 
     // skills =this.physics.add.group();
-
-    skill = this.physics.add.sprite(0,0,'skill_roar');
-    skill.visible = false;
-    skill.body.enable = false;
-    skill.body.setGravity(0,-300);
-    skill.on('animationcomplete', function (animation,frame) {
-        skill.visible = false;
-        skill.body.enable = false;
-        isUsingSkill = false;
-    });
     // skills.add(skill);
 
-    character = this.physics.add.sprite(100,440,'player_idle');
-    character.setBounce(0);
-    character.setCollideWorldBounds(true);
-    character2 = new Character(this,100,240);   
+    skill = new Skill(this,0,0,'skill_roar');
+    skill2 = new Skill(this,0,0,'skill_roar');
 
+    character = new Character(this,100,240,'player_idle'); 
+    character.addSkill(skill);
+    skill2.name='roar2';
+    character.addSkill(skill2);
 
     this.anims.create({
         key: 'left',
@@ -164,28 +251,14 @@ function create ()
     
     this.physics.add.collider(character,platforms);
     this.physics.add.collider(mob,platforms);
-    this.physics.add.overlap(character,mob,takeDmg,null,this);
-    this.physics.add.overlap(skill,mob,takeDmg,null,this);
+    this.physics.add.overlap(character,mob,null,null,this);
+    //how to distinguish which skill hit?
+    this.physics.add.overlap(character.getAllSkills(),mob,takeDmg,null,this);
     // this.physics.add.overlap(skill,player,takeDmg,null,this);
     
     cursors=this.input.keyboard.createCursorKeys();
     
     keyObj = this.input.keyboard.addKey('A');  // Get key object
-
-
-    stars = this.physics.add.group({
-        key: 'star',
-        repeat: 11,
-        setXY: { x: 12, y: 0, stepX: 70 }
-    });
-
-    stars.children.iterate(function(child){
-
-        child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
-
-    });
-    this.physics.add.collider(stars,platforms);
-    this.physics.add.overlap(character,stars,collectStar,null,this);
 
 }
 
@@ -211,17 +284,13 @@ function update(){
     }
     else
     {   
-        
-
-
         if(character.body.onFloor()){
             character.anims.play('idle',true);
         }else {
             character.anims.play('jump',true);
         }
         character.setVelocityX(0);
-        
-        
+    
     }
     //jump
     if (cursors.up.isDown && character.body.onFloor())
@@ -230,12 +299,13 @@ function update(){
         character.anims.play('jump',true);
         
     }
+    //listener for the skill
     if(keyObj.isDown && !isUsingSkill){
         isUsingSkill = true;
-        skill.visible = true;
-        skill.body.enable = true;
-        skill.setPosition(character.x,character.y,0);
-        skill.anims.play('roar',true);
+        character.getSkill().visible = true;
+        character.getSkill().body.enable = true;
+        character.getSkill().setPosition(character.x,character.y,0);
+        character.getSkill().anims.play('roar',true);
 
         
     }
@@ -253,6 +323,13 @@ function collectStar(p1,star){
     star.disableBody(true,true);
 }
 
-function takeDmg(p1,mob){
-    console.log("dmgtaken!");
+function takeDmg(skillhit,mobhit){
+    //will only take the skill that hits
+    //get the character's stats based on the skill and then calculate the dmg that way. but here there is only one character.
+    
+    //do this so that the skill will only trigger once
+    skillhit.body.enable = false;
+    mobhit.sethp(skillhit.baseDmg+skillhit.getCharacter().str*0.5);
+    console.log("Mob hit!");
+    var txt = this.add.text(mobhit.x, mobhit.y, skillhit.baseDmg+skillhit.getCharacter().str*0.5);
 }
