@@ -331,5 +331,19 @@ function takeDmg(skillhit,mobhit){
     skillhit.body.enable = false;
     mobhit.sethp(skillhit.baseDmg+skillhit.getCharacter().str*0.5);
     console.log("Mob hit!");
-    var txt = this.add.text(mobhit.x, mobhit.y, skillhit.baseDmg+skillhit.getCharacter().str*0.5);
+    var txt = this.add.text(mobhit.x, mobhit.y, skillhit.baseDmg+skillhit.getCharacter().str*0.5,{ fontSize: "56px" });
+    this.tweens.add({
+        targets: txt,
+        y: txt.y - 50,
+        alpha: 0,
+        ease: "Quart.easeInOut",
+        duration: 1000,
+        repeat: 0,
+        // OnComplete: function(){
+        //     txt.destroy();
+        // },
+        callbackScope:this
+
+    });
 }
+
