@@ -141,6 +141,7 @@ var aIsDown ;
 var aIsUp ;
 var isUsingSkill = false;
 var actual_JSON;
+var txt;
 function loadJSON(callback) {   
     var xobj = new XMLHttpRequest();
     xobj.overrideMimeType("application/json");
@@ -331,19 +332,24 @@ function takeDmg(skillhit,mobhit){
     skillhit.body.enable = false;
     mobhit.sethp(skillhit.baseDmg+skillhit.getCharacter().str*0.5);
     console.log("Mob hit!");
-    var txt = this.add.text(mobhit.x, mobhit.y, skillhit.baseDmg+skillhit.getCharacter().str*0.5,{ fontSize: "56px" });
+    txt = this.add.text(mobhit.x, mobhit.y, skillhit.baseDmg+skillhit.getCharacter().str*0.5,{ fontSize: "56px" });
     this.tweens.add({
         targets: txt,
         y: txt.y - 50,
         alpha: 0,
         ease: "Quart.easeInOut",
-        duration: 1000,
+        duration: 500,
         repeat: 0,
-        // OnComplete: function(){
-        //     txt.destroy();
-        // },
-        callbackScope:this
 
     });
+}
+
+//  The callback is always sent a reference to the Tween as the first argument and the targets as the second.
+//  Whatever you provided in the onCompleteParams array follows.
+function onCompleteHandler (tween, targets, myTxt)
+{
+    console.log('onCompleteHandler');
+
+    console.log(myTxt);
 }
 
